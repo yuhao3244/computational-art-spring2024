@@ -12,8 +12,8 @@ function setup() {
   for (let i = 0; i < numClouds; i++) {
     let x = random(100, width - 100);
     let y = random(50, 150);
-    cloudSystems.push(new ParticleSystem(x, y, true)); // Create clouds
-    raindropSystems.push(new ParticleSystem(x, y + 50, false)); // Create raindrops below clouds
+    cloudSystems.push(new ParticleSystem(x, y, true)); 
+    raindropSystems.push(new ParticleSystem(x, y + 50, false)); 
   }
 }
 
@@ -28,7 +28,7 @@ function draw() {
     raindropSystem.update();
   }
 
-  // Add a border so it looks cool
+
   noFill();
   strokeWeight(10);
   stroke(0, 0, 100);
@@ -45,7 +45,7 @@ class Particle {
 
     this.mass = random(1, 5);
 
-    this.radius = isCloud ? random(20, 30) : 1 + sqrt(this.mass); // Larger radius for clouds
+    this.radius = isCloud ? random(20, 30) : 1 + sqrt(this.mass); 
 
     this.lifetime = random(50, 400);
   }
@@ -94,14 +94,14 @@ class ParticleSystem {
   constructor(x, y, isCloud) {
     this.pos = createVector(x, y);
     this.particles = [];
-    this.active = true; // Always active for clouds and raindrops
-    this.hue = isCloud ? random(200, 240) : random(360); // Blueish hue for clouds, random for raindrops
+    this.active = true; 
+    this.hue = isCloud ? random(200, 240) : random(360); 
     this.isCloud = isCloud;
   }
 
   update() {
     if (this.active) {
-      let numParticles = this.isCloud ? 5 : 1; // Create more particles for clouds
+      let numParticles = this.isCloud ? 5 : 1; 
       for (let i = 0; i < numParticles; i++) {
         this.particles.push(new Particle(this.pos.x, this.pos.y, this.hue, this.isCloud));
       }
