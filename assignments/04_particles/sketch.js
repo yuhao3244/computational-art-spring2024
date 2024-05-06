@@ -1,121 +1,72 @@
-let cloudSystems = [];
-let raindropSystems = [];
-let numClouds = 3;
-let gravity;
+let particles = [];
+let mousePos;
+let fishImg;
+
+function preload() {
+  fishImg = loadImage('fish.png'); 
+}
 
 function setup() {
-  createCanvas(600, 400);
-  colorMode(HSB);
-
-  gravity = createVector(0, 0.1);
-
-  for (let i = 0; i < numClouds; i++) {
-    let x = random(100, width - 100);
-    let y = random(50, 150);
-    cloudSystems.push(new ParticleSystem(x, y, true)); 
-    raindropSystems.push(new ParticleSystem(x, y + 50, false)); 
+  createCanvas(640, 480);
+  mousePos = createVector(width / 2, height / 2);
+  for (let i = 0; i < 200; i++) {
+    let p = new Particle(random(width), random(height));
+    particles.push(p);
   }
 }
 
 function draw() {
-  background(0, 0, 15);
-
-  for (let cloud of cloudSystems) {
-    cloud.update();
+  background(173, 216, 230); 
+  mousePos.set(mouseX, mouseY);
+  
+  for (let i = 0; i < particles.length; i++) {
+    let p = particles[i];
+    p.update();
+    p.display();
   }
-
-  for (let raindropSystem of raindropSystems) {
-    raindropSystem.update();
-  }
-
-
-  noFill();
-  strokeWeight(10);
-  stroke(0, 0, 100);
-  rect(0, 0, width, height);
+  
+  fill(255);
+  ellipse(mouseX, mouseY, 5);
 }
 
 class Particle {
-  constructor(x, y, h, isCloud) {
-    this.pos = createVector(x, y);
-    this.vel = createVector(random(-2, 2), random(-1, 1));
-    this.acc = createVector(0, 0);
-
-    this.hue = (h + random(20)) % 360;
-
-    this.mass = random(1, 5);
-
-    this.radius = isCloud ? random(20, 30) : 1 + sqrt(this.mass); 
-
-    this.lifetime = random(50, 400);
-  }
-
-  addForce(force) {
-    let forceWithMass = p5.Vector.div(force, this.mass);
-    this.acc.add(forceWithMass);
-  }
-
-  addWaterDrag() {
-    let dragConstant = -0.3;
-    let forceDrag = this.vel.mag() * this.vel.mag() * dragConstant;
-    let drag = p5.Vector.normalize(this.vel);
-    drag.mult(forceDrag);
-    this.addForce(drag);
+  constructor(x, y) {
+    this.p = createVector(x, y);
+    this.v = createVector(random(-1, 1), random(-1, 1));
+    this.radius = random(3, 10);
+    this.trail = [];
+    this.trailLength = 20;
+    this.trailColor = color(random(100, 200), random(100, 200), random(200, 255), 100);
   }
 
   update() {
-    this.lifetime--;
-    if (this.lifetime < 0) {
-      this.destroy = true;
+    let dir = p5.Vector.sub(mousePos, this.p).normalize().mult(0.1);
+    this.v.add(dir);
+
+    this.v.limit(3);
+
+    this.p.add(this.v);
+
+    if (this.p.x < 0 || this.p.x > width || this.p.y < 0 || this.p.y > height) {
+      this.p.set(random(width), random(height));
     }
 
-    this.radius -= 0.1;
-
-    this.addForce(gravity);
-
-    this.vel.add(this.acc);
-    this.vel.limit(5);
-    this.pos.add(this.vel);
-
-    this.acc.mult(0);
+    this.trail.push(this.p.copy());
+    if (this.trail.length > this.trailLength) {
+      this.trail.splice(0, 1);
+    }
   }
 
-  show() {
-    push();
-    noStroke();
-    translate(this.pos.x, this.pos.y);
-    fill(this.hue, 50, 100, 0.5 - map(this.lifetime, 0, 100, .5, 0));
-    ellipse(0, 0, this.radius * 2);
-    pop();
-  }
-}
-
-class ParticleSystem {
-  constructor(x, y, isCloud) {
-    this.pos = createVector(x, y);
-    this.particles = [];
-    this.active = true; 
-    this.hue = isCloud ? random(200, 240) : random(360); 
-    this.isCloud = isCloud;
-  }
-
-  update() {
-    if (this.active) {
-      let numParticles = this.isCloud ? 5 : 1; 
-      for (let i = 0; i < numParticles; i++) {
-        this.particles.push(new Particle(this.pos.x, this.pos.y, this.hue, this.isCloud));
-      }
+  display() {
+    noFill();
+    beginShape();
+    stroke(this.trailColor);
+    for (let i = 0; i < this.trail.length; i++) {
+      vertex(this.trail[i].x, this.trail[i].y);
     }
+    endShape();
 
-    for (let particle of this.particles) {
-      particle.update();
-      particle.show();
-    }
-
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      if (this.particles[i].destroy) {
-        this.particles.splice(i, 1);
-      }
-    }
+    imageMode(CENTER);
+    image(fishImg, this.p.x, this.p.y, this.radius * 2, this.radius * 2);
   }
 }
