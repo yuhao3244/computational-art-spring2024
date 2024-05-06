@@ -1,13 +1,15 @@
-const keys = 'qwertyui';
+const keys = 'qwertyui'; 
 const keyIndex = {};
 let soundFile;
 let bgm;
 let scale;
 let drums = [];
+let drumImage;
 
 function preload() {
     soundFile = loadSound('samples/soundFile.wav');
     bgm = loadSound('samples/bgm.wav');
+    drumImage = loadImage('samples/drum.png');
 }
 
 function setup() {
@@ -15,38 +17,37 @@ function setup() {
     background(0);
     scale = [0, 2, 4, 5, 7, 9, 11, 12];
 
-    // 初始化每个鼓面的位置和大小
     let numDrums = keys.length;
-    let drumWidth = 80;
-    let drumHeight = 50;
-    let spacing = (width - (numDrums * drumWidth)) / (numDrums + 1);
+    let drumRadius = 40;
+    let spacing = (width - (numDrums * drumRadius * 2)) / (numDrums + 1);
     let startY = height / 2 + 100;
     
     for (let i = 0; i < numDrums; i++) {
-        let x = spacing + i * (drumWidth + spacing);
-        drums.push({ x: x, y: startY, w: drumWidth, h: drumHeight, key: keys.charAt(i), pressed: false });
+        let x = spacing + i * (drumRadius * 2 + spacing);
+        drums.push({ x: x, y: startY, r: drumRadius, key: keys.charAt(i), pressed: false });
         keyIndex[keys.charAt(i)] = () => playSound(scale[i]);
     }
 }
 
 function draw() {
-    background(150);
+    background(50);
     fill(255);
     textSize(16);
     textAlign(CENTER, CENTER);
     text('Press any of "q w e r t y u i" to play a note', width / 2, 40);
     text('Mouse click to play background music', width / 2, 70);
     
-    // 绘制每个鼓面
     drums.forEach(drum => {
         if (drum.pressed) {
-            fill(255, 0, 0);
+            fill(100);
         } else {
             fill(200);
         }
-        rect(drum.x, drum.y, drum.w, drum.h);
+        ellipse(drum.x, drum.y, drum.r * 2);
+        imageMode(CENTER);
+        image(drumImage, drum.x, drum.y + drum.r + 20, drum.r * 2, drum.r * 2);
         fill(0);
-        text(drum.key, drum.x + drum.w / 2, drum.y + drum.h / 2);
+        text(drum.key, drum.x, drum.y);
     });
 }
 
